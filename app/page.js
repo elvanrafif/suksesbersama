@@ -77,7 +77,7 @@ export const TableDemo = ({ array = [], loading, refetchMembers }) => {
       </TableHeader>
       <TableBody>
         {array?.map((member, index) => {
-          const { histories, isMaster } = member || {};
+          const { histories, isMaster, photo_url } = member || {};
           const price = histories?.length * amountPerEntry;
           const totalAmount = price ? formatCurrency(price) : 0;
           return (
@@ -85,7 +85,7 @@ export const TableDemo = ({ array = [], loading, refetchMembers }) => {
               <TableCell>{index + 1}</TableCell>
               <TableCell>
                 <Avatar>
-                  {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+                  <AvatarImage src={photo_url} />
                   <AvatarFallback>{member.name[0]}</AvatarFallback>
                 </Avatar>
               </TableCell>
