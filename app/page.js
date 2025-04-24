@@ -167,7 +167,7 @@ export const TableDemo = ({
 export const AccountHeader = ({ totalSumAmount }) => {
   const { toast } = useToast();
 
-  const accountNumber = "0075 7824 5926";
+  const accountNumber = "000014030290";
   const accountNumberWithoutSpace = accountNumber.replace(/\s+/g, "");
 
   const handleCopy = () => {
@@ -191,13 +191,14 @@ export const AccountHeader = ({ totalSumAmount }) => {
       >
         <div className="flex items-center gap-2">
           <img
-            src="/blu.png"
+            src="/superbank.png"
             className="w-4 h-auto sm:w-6 md:w-8 rounded-full"
           />
           <span className="text-md sm:text-xl md:text-2xl font-semibold">
             {accountNumber}
           </span>
         </div>
+        <div className="text-xs -mt-3 font-bold">Superbank - Elvan</div>
         <div className="text-xs -mt-3 text-gray-400">klik untuk menyalin</div>
       </div>
     </div>
