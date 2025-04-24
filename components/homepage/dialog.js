@@ -30,8 +30,12 @@ export const DialogUploadReceipt = ({ array = [], refetch }) => {
   const [name, setName] = useState(false);
   const [date, setDate] = useState(false);
   const [file, setFile] = useState(false);
+  const [isCustomUrl, setIsCustomUrl] = useState(false);
+  const [customNotes, setCustomNotes] = useState("");
+  // Add new state for notes
+  const [customUrl, setCustomUrl] = useState("");
 
-  const isDisabled = !name || !date || !file;
+  const isDisabled = !name || !date || (!file && !customUrl);
 
   const { isOpen, toggle } = useModalHook();
 
@@ -47,26 +51,38 @@ export const DialogUploadReceipt = ({ array = [], refetch }) => {
     setName(false);
     setDate(false);
     setFile(false);
+    setIsCustomUrl(false);
+    setCustomUrl("");
+    setCustomNotes("");
   };
 
+  // Update onSubmit function
   const onSubmit = async () => {
     const getIdUser = array?.filter(
       (item) => item.name?.toLowerCase() == name
     )[0]?.id;
-    const newFile = file?.target?.files[0];
 
-    const { data, error } = await supabase.storage
-      .from("receipt")
-      .upload(`receipt-${Date.now()}.jpeg`, newFile, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: newFile?.mimetype,
-      });
+    let receiptPath;
+
+    if (isCustomUrl) {
+      receiptPath = customUrl;
+    } else {
+      const newFile = file?.target?.files[0];
+      const { data, error } = await supabase.storage
+        .from("receipt")
+        .upload(`receipt-${Date.now()}.jpeg`, newFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: newFile?.mimetype,
+        });
+      receiptPath = data?.path;
+    }
 
     await addSavingHistory({
       userId: getIdUser,
       period: date,
-      receiptUrl: data?.path,
+      receiptUrl: receiptPath,
+      notes: isCustomUrl ? customNotes : null,
     });
 
     refetch();
@@ -130,7 +146,36 @@ export const DialogUploadReceipt = ({ array = [], refetch }) => {
             );
           })}
         </div>
-        <div className="grid w-full max-w-sm items-center gap-1.5">
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="customUrl"
+            checked={isCustomUrl}
+            onChange={(e) => setIsCustomUrl(e.target.checked)}
+          />
+          <DialogDescription>Custom URL?</DialogDescription>
+        </div>
+        <div
+          className="space-y-4"
+          style={{ display: isCustomUrl ? "initial" : "none" }}
+        >
+          <Input
+            type="text"
+            placeholder="Masukkan URL gambar"
+            value={customUrl}
+            onChange={(e) => setCustomUrl(e.target.value)}
+          />
+          <Input
+            type="text"
+            placeholder="Masukkan catatan"
+            value={customNotes}
+            onChange={(e) => setCustomNotes(e.target.value)}
+          />
+        </div>
+        <div
+          className="grid w-full max-w-sm items-center gap-1.5"
+          style={{ display: isCustomUrl ? "none" : "initial" }}
+        >
           <Input id="picture" type="file" onChange={(e) => setFile(e)} />
         </div>
         <DialogFooter>
@@ -149,9 +194,11 @@ export const DialogReceipt = ({ member, date }) => {
   const { name, histories, isMaster } = member || {};
   const { label, value: valueDate } = date || {};
 
+  const historyData = histories?.filter((item) => item.period == valueDate)[0];
+  const getImageUrl = historyData?.receiptUrl;
+  const getNotes = historyData?.notes;
+
   const show = async () => {
-    const getImageUrl = histories?.filter((item) => item.period == valueDate)[0]
-      ?.receiptUrl;
     const { data: image_url } = await supabase.storage
       .from("receipt")
       .getPublicUrl(getImageUrl);
@@ -178,6 +225,11 @@ export const DialogReceipt = ({ member, date }) => {
         <DialogHeader>
           <DialogTitle>{name}</DialogTitle>
           <DialogDescription>{label}</DialogDescription>
+          <DialogDescription
+            style={{ fontSize: 10, lineHeight: "12px", marginTop: 0 }}
+          >
+            {getNotes}
+          </DialogDescription>
         </DialogHeader>
         <div className="text-center">
           {!imageUrl ? (

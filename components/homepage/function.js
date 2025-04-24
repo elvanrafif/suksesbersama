@@ -27,11 +27,12 @@ export const ManipulateMembers = (dataRaw) => {
 
   return members;
 };
-export const addSavingHistory = async ({ userId, period, receiptUrl }) => {
+export const addSavingHistory = async ({ userId, period, receiptUrl, notes }) => {
   // Membuat objek JSON baru untuk dimasukkan
   const newEntry = {
     period,
     receiptUrl,
+    notes,
   };
 
   // Dapatkan data `saving_history` yang ada
@@ -56,6 +57,7 @@ export const addSavingHistory = async ({ userId, period, receiptUrl }) => {
       return {
         ...entry,
         receiptUrl: receiptUrl,
+        notes: notes,
       };
     }
     return entry;
