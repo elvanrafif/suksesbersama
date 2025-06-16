@@ -41,25 +41,44 @@ export const optionsDate = [
     month: "April",
     year: 2025,
   },
+  // {
+  //   label: "May 2025",
+  //   alias: "May'25",
+  //   value: 2505,
+  //   month: "May",
+  //   year: 2025,
+  // },
+  // {
+  //   label: "June 2025",
+  //   alias: "Jun'25",
+  //   value: 2506,
+  //   month: "June",
+  //   year: 2025,
+  // },
+  // {
+  //   label: "July 2025",
+  //   alias: "Jul'25",
+  //   value: 2507,
+  //   month: "July",
+  //   year: 2025,
+  // },
+];
+
+export const expensesTable = [
   {
-    label: "May 2025",
-    alias: "May'25",
-    value: 2505,
-    month: "May",
-    year: 2025,
+    label: "No",
+    value: "number",
   },
   {
-    label: "June 2025",
-    alias: "Jun'25",
-    value: 2506,
-    month: "June",
-    year: 2025,
+    label: "Date",
+    value: "date",
   },
   {
-    label: "July 2025",
-    alias: "Jul'25",
-    value: 2507,
-    month: "July",
-    year: 2025,
+    label: "Description",
+    value: "description",
+  },
+  {
+    label: "Amount",
+    value: "amount",
   },
 ];

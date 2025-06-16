@@ -16,7 +16,7 @@ import {
   DialogReceipt,
   DialogUploadReceipt,
 } from "@/components/homepage/dialog";
-import { optionsDate } from "@/components/homepage/constant";
+import { expensesTable, optionsDate } from "@/components/homepage/constant";
 import { SkeletonLoadingTable } from "@/components/homepage/skeleton";
 import { formatCurrency } from "@/lib/tools";
 import {
@@ -34,15 +34,31 @@ export default function Home() {
 
   const members = ManipulateMembers(dataRaw);
 
+  const {
+    data: dataExpenses,
+    loading: loadingExpenses,
+    refetch: refetchExpenses,
+  } = useFetch({ table: "expenses", order: "created_at" });
+
   const amountPerEntry = 150000;
   const totalSumAmount = members.reduce((total, person) => {
     const historyCount = person.histories ? person.histories.length : 0;
     return total + historyCount * amountPerEntry;
   }, 0);
+  const totalSumExpenses = dataExpenses?.reduce(
+    (total, item) => total + item.amount,
+    0
+  );
+
+  const totalAccount = totalSumAmount - totalSumExpenses;
 
   return (
     <div className="h-screen px-4 sm:px-10 md:px-20 lg:px-40 xl:px-52">
-      <AccountHeader totalSumAmount={totalSumAmount} />
+      <AccountHeader
+        totalSumAmount={totalAccount}
+        income={totalSumAmount}
+        outcome={totalSumExpenses}
+      />
       <div className="flex items-center justify-center ">
         <TableDemo
           array={members}
@@ -50,6 +66,15 @@ export default function Home() {
           totalSumAmount={totalSumAmount}
           amountPerEntry={amountPerEntry}
           refetchMembers={refetchMembers}
+        />
+      </div>
+      <div className="flex items-center justify-center mt-20 pb-20">
+        <TableExpenses
+          array={dataExpenses}
+          loading={loadingExpenses}
+          totalSumExpenses={totalSumExpenses}
+          // amountPerEntry={amountPerEntry}
+          refetchMembers={refetchExpenses}
         />
       </div>
     </div>
@@ -150,12 +175,12 @@ export const TableDemo = ({
       <TableFooter>
         <TableRow>
           <TableCell
-            colSpan={12}
+            colSpan={9}
             className="font-semibold text-right whitespace-nowrap"
           >
             Total Tabungan
           </TableCell>
-          <TableCell className="text-right whitespace-nowrap">{`IDR ${formatCurrency(
+          <TableCell className="text-right whitespace-nowrap font-bold">{`IDR ${formatCurrency(
             totalSumAmount
           )}`}</TableCell>
         </TableRow>
@@ -164,7 +189,54 @@ export const TableDemo = ({
   );
 };
 
-export const AccountHeader = ({ totalSumAmount }) => {
+export const TableExpenses = ({
+  array = [],
+  loading = false,
+  totalSumExpenses,
+}) => {
+  if (loading || !array.length) return <SkeletonLoadingTable />;
+  return (
+    <Table className="border-collapse w-full">
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-0 whitespace-nowrap">No</TableHead>
+          <TableHead className="w-0 whitespace-nowrap">Tanggal</TableHead>
+          <TableHead className="whitespace-nowrap">Deskripsi</TableHead>
+          <TableHead className="text-right whitespace-nowrap">Jumlah</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {array?.map((item, index) => (
+          <TableRow key={index}>
+            <TableCell className="whitespace-nowrap">{index + 1}</TableCell>
+            <TableCell className="whitespace-nowrap">{item?.date}</TableCell>
+            <TableCell className="whitespace-nowrap">
+              {item?.description}
+            </TableCell>
+            <TableCell className="whitespace-nowrap text-right">
+              IDR {formatCurrency(item?.amount)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell
+            colSpan={3}
+            className="font-semibold text-right whitespace-nowrap"
+          >
+            Total Pengeluaran
+          </TableCell>
+          <TableCell className="text-right whitespace-nowrap font-bold">{`IDR ${formatCurrency(
+            totalSumExpenses
+          )}`}</TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
+  );
+};
+
+export const AccountHeader = ({ totalSumAmount, income, outcome }) => {
   const { toast } = useToast();
 
   const accountNumber = "000014030290";
@@ -180,10 +252,13 @@ export const AccountHeader = ({ totalSumAmount }) => {
   return (
     <div className="my-10 flex justify-between items-center">
       <div className="flex flex-col text-lg sm:text-xl md:text-2xl">
-        <span className="text-md sm:text-xl md:text-2xl font-semibold">
+        <span className="text-md sm:text-xl md:text-2xl font-semibold mb-2">
           IDR {formatCurrency(totalSumAmount)}
         </span>
-        <span className="text-xs -mt-1 text-gray-400">(Saldo sementara)</span>
+        <span className="text-xs -mt-1 text-gray-400">
+          Pemasukan = {formatCurrency(income)}<br />
+          Pengeluaran ={" "}{formatCurrency(outcome)}
+        </span>
       </div>
       <div
         className="flex flex-col justify-center items-end gap-2 cursor-pointer"
